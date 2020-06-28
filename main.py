@@ -23,10 +23,12 @@ net = cv.dnn.readNetFromTensorflow("graph_opt.pb")
 
 # cap = cv.VideoCapture(0)
 # cap = cv.VideoCapture('parkinsongait.mp4')
-cap = cv.VideoCapture('cerebellar.mp4')
+cap = cv.VideoCapture('hemiplegic.mp4')
 
 park = []
 hemo = []
+cet = []
+cetf = False
 while cv.waitKey(1) < 0:
     hasFrame, frame = cap.read()
     # import pdb; pdb.set_trace()
@@ -78,25 +80,36 @@ while cv.waitKey(1) < 0:
             cv.putText(frame,parts[part.index(13)], points[13], cv.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0) , 2, cv.LINE_AA)
 
     # import pdb; pdb.set_trace()
+    print(points[2][0])
+
     try:
+
         if abs(points[13][0]) - abs(points[10][0]) < 50 and abs(points[12][0]) - abs(points[9][0]) < 50:
-            park.append("1")
+            park.append(abs(points[13][0]) - abs(points[10][0]))
         # cv.putText(frame, str("Parkison gait"), (100,200), cv.FONT_HERSHEY_DUPLEX, 3.0, (0, 0, 255), 5)
-        elif abs(points[13][0]) - abs(points[10][0]) > 50 and abs(points[12][0]) - abs(points[9][0]) > 50:
-            hemo.append("1")
+        elif abs(points[13][0]) - abs(points[10][0]) > 50 and abs(points[12][0]) - abs(points[9][0]) > 50 and abs(points[2][0]) > 600:
+            hemo.append(abs(points[13][0]) - abs(points[10][0]))
+        elif abs(points[2][0]) < 600 :
+            cet.append("1")
     except:
         cv.putText(frame, str("finding"), (100,200), cv.FONT_HERSHEY_DUPLEX, 1.0, (0, 0, 255), 5)
-
+    print(cet)
 
     cframe += 1
 
-    if len(hemo) > 120 or len(park) > 120:
+    if len(cet) > 8:
+        cetf = True
+
+    if len(hemo) > 120 or len(park) > 120 or cetf is True:
         # if max(len())
         # import pdb; pdb.set_trace()
-        if len(hemo) > len(park):
+
+        if len(hemo) > len(park) and cetf is False:
             cv.putText(frame, str("Hemiplegic Gait"), (100,200), cv.FONT_HERSHEY_DUPLEX, 3.0, (0, 0, 255), 5)
-        else:
+        elif len(hemo) < len(park) and cetf is False:
             cv.putText(frame, str("Parkison gait"), (100,200), cv.FONT_HERSHEY_DUPLEX, 3.0, (0, 0, 255), 5)
+        elif cetf is True:
+            cv.putText(frame, str("myopathic gait"), (100,200), cv.FONT_HERSHEY_DUPLEX, 3.0, (0, 0, 255), 5)
 
 
 
